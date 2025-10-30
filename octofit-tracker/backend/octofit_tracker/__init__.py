@@ -1,1 +1,1 @@
-# octofit_tracker package
+# Django app init
