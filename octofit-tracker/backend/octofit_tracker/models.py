@@ -1,24 +1,45 @@
-from django.db import models
+from djongo import models
+from django.contrib.auth.models import AbstractUser
+
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    groups = models.ManyToManyField(
+        'auth.Group',
+        related_name='octofit_users',
+        blank=True,
+        help_text='The groups this user belongs to.',
+        verbose_name='groups',
+    )
+    user_permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='octofit_user_permissions',
+        blank=True,
+        help_text='Specific permissions for this user.',
+        verbose_name='user permissions',
+    )
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
 
 class Team(models.Model):
     name = models.CharField(max_length=100, unique=True)
-
-class User(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='members')
+    def __str__(self):
+        return self.name
 
 class Activity(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    type = models.CharField(max_length=50)
-    duration = models.IntegerField()  # minutes
-    date = models.DateField()
+    name = models.CharField(max_length=100)
+    user_email = models.CharField(max_length=100)
+    team = models.CharField(max_length=100)
+    def __str__(self):
+        return f"{self.name} - {self.user_email}"
+
+class Leaderboard(models.Model):
+    team = models.CharField(max_length=100)
+    points = models.IntegerField()
+    def __str__(self):
+        return f"{self.team}: {self.points}"
 
 class Workout(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField()
-    suggested_for = models.ManyToManyField(User, blank=True)
-
-class Leaderboard(models.Model):
-    team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    points = models.IntegerField(default=0)
+    difficulty = models.CharField(max_length=50)
+    def __str__(self):
+        return f"{self.name} ({self.difficulty})"
